@@ -30,12 +30,21 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-//all asingment show in 5000
+
     const assignmentCollection = client.db('studyMate').collection('allAssignment');
-     
+
+     //all asingment show in 5000
     app.get('/allAssignment', async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    //get create assignment
+    app.post('/allAssignment', async (req, res) => {
+      const newAssignment = req.body;
+      console.log(newAssignment);
+      const result = await assignmentCollection.insertOne(newAssignment);
       res.send(result);
     })
 
