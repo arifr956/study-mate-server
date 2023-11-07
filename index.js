@@ -48,6 +48,15 @@ async function run() {
       res.send(result);
     })
 
+    //find assignment for update 
+    
+    app.get('/allAssignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    })
+
     //delete from all assignment
     app.delete('/allAssignment/:id', async (req, res) => {
       const id = req.params.id;
