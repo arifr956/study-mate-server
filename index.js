@@ -36,13 +36,20 @@ async function run() {
 
 
 
-    //get add submitted
+    //get add submitted assignment
     app.post('/allsubmitted', async (req, res) => {
       const newSubmit = req.body;
       console.log(newSubmit);
       const result = await submittedCollection.insertOne(newSubmit);
       res.send(result);
 
+    })
+
+    //// Show all submitted product
+    app.get('/allsubmitted', async (req, res) => {
+      const cursor = submittedCollection.find();
+      const result = await cursor.toArray();
+      res.json(result); 
     })
 
 
