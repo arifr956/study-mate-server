@@ -45,15 +45,42 @@ async function run() {
 
     })
 
-    //// Show all submitted product
-    app.get('/allsubmitted', async (req, res) => {
-      const cursor = submittedCollection.find();
-      const result = await cursor.toArray();
-      res.json(result); 
+    //update submitted assignment 
+    //find assignment for update 
+    app.get('/allsubmitted/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await submittedCollection.findOne(query);
+      res.send(result);
+    })
+
+    //update assignment
+    app.put('/allsubmitted/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updated = req.body;
+      const assignment = {
+        $set: {
+          obtainMarks: updated.obtainMarks,
+          status: updated.status,
+        }
+      }
+      const result = await submittedCollection.updateOne(filter, assignment, options);
+      res.send(result);
     })
 
 
-     //all asingment show in 5000
+
+          //// Show all submitted product
+          app.get('/allsubmitted', async (req, res) => {
+            const cursor = submittedCollection.find();
+            const result = await cursor.toArray();
+            res.json(result);
+          })
+
+
+    //all asingment show in 5000
     app.get('/allAssignment', async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
@@ -75,7 +102,7 @@ async function run() {
       const result = await assignmentCollection.findOne(query);
       res.send(result);
     })
-   
+
     //update
     app.put('/allAssignment/:id', async (req, res) => {
       const id = req.params.id;
@@ -86,8 +113,8 @@ async function run() {
         $set: {
           title: updatedAssignment.title,
           description: updatedAssignment.description,
-          marks: updatedAssignment. marks,
-          thumbnailUrl:updatedAssignment.thumbnailUrl,
+          marks: updatedAssignment.marks,
+          thumbnailUrl: updatedAssignment.thumbnailUrl,
           difficulty: updatedAssignment.difficulty,
           dueDate: updatedAssignment.dueDate,
           image: updatedAssignment.image
@@ -103,23 +130,23 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await assignmentCollection.deleteOne(query);
       res.send(result);
-  })
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-   // await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
 
 
-app.get('/', ( req, res ) => {
-    res.send('server is running')
+app.get('/', (req, res) => {
+  res.send('server is running')
 })
 
 app.listen(port, () => {
-    console.log(`server running on port ${port}`)
+  console.log(`server running on port ${port}`)
 })
