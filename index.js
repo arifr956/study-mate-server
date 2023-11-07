@@ -49,11 +49,31 @@ async function run() {
     })
 
     //find assignment for update 
-    
     app.get('/allAssignment/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    })
+   
+    //update
+    app.put('/allAssignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updatedAssignment = req.body;
+      const assignment = {
+        $set: {
+          title: updatedAssignment.title,
+          description: updatedAssignment.description,
+          marks: updatedAssignment. marks,
+          thumbnailUrl:updatedAssignment.thumbnailUrl,
+          difficulty: updatedAssignment.difficulty,
+          dueDate: updatedAssignment.dueDate,
+          image: updatedAssignment.image
+        }
+      }
+      const result = await assignmentCollection.updateOne(filter, assignment, options);
       res.send(result);
     })
 
