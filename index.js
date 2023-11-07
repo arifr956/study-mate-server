@@ -29,12 +29,21 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+//all asingment show in 5000
+    const assignmentCollection = client.db('studyMate').collection('allAssignment');
+     
+    app.get('/allAssignment', async (req, res) => {
+      const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+   // await client.close();
   }
 }
 run().catch(console.dir);
