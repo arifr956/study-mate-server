@@ -60,9 +60,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
 
- //auth related api
+ //auth related api for jwt
  app.post('/jwt', logger, async (req, res) => {
   const user = req.body;
   console.log('user for token', user);
@@ -71,7 +71,8 @@ async function run() {
   res.cookie('token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'none'
+      sameSite: 'none',
+      maxAge: 60 * 60 * 1000,
   })
       .send({ success: true });
 })
