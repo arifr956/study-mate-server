@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const app = express();
 const { ObjectId } = require('mongodb');
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -8,12 +10,41 @@ const port = process.env.PORT || 5000;
 
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://study-mate-client.web.app/',
+    
+],
+credentials: true
+}));
 app.use(express.json());
-//app.use(cookieParser());
 
+//middle ware to get cookies
+app.use(cookieParser());
 
-//console.log(process.env.DB_PASS)
+// middlewares for token, validation
+const logger = (req, res, next) => {
+  console.log('log: info', req.method, req.url);
+  next();
+}
+
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  // console.log('token in the middleware', token);
+  // no token available 
+  if (!token) {
+      return res.status(401).send({ message: 'unauthorized access' })
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+      }
+      req.user = decoded;
+      next();
+  })
+}
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.moucvko.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -31,17 +62,39 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+ //auth related api
+ app.post('/jwt', logger, async (req, res) => {
+  const user = req.body;
+  console.log('user for token', user);
+  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+
+  res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
+  })
+      .send({ success: true });
+})
+
+app.post('/logout', async (req, res) => {
+  const user = req.body;
+  console.log('logging out', user);
+  res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+})
+
+
+
     const assignmentCollection = client.db('studyMate').collection('allAssignment');
     const submittedCollection = client.db('studyMate').collection('allsubmitted');
 
 
 
-     //// Show all submitted product
-          app.get('/allsubmitted', async (req, res) => {
-            const cursor = submittedCollection.find();
-            const result = await cursor.toArray();
-            res.json(result);
-          })
+    //// Show all submitted product
+    app.get('/allsubmitted', logger, verifyToken, async (req, res) => {
+      const cursor = submittedCollection.find();
+      const result = await cursor.toArray();
+      res.json(result);
+    })
 
     //get add submitted assignment from take assignment
     app.post('/allsubmitted', async (req, res) => {
@@ -51,6 +104,7 @@ async function run() {
       res.send(result);
 
     })
+
 
     //update submitted assignment 
     //find assignment for update 
@@ -80,10 +134,10 @@ async function run() {
 
 
 
-         
 
 
-          //assignmentCollection part
+
+    //assignmentCollection part
     //all asingment show in 5000
     app.get('/allAssignment', async (req, res) => {
       const cursor = assignmentCollection.find();
