@@ -36,7 +36,14 @@ async function run() {
 
 
 
-    //get add submitted assignment
+     //// Show all submitted product
+          app.get('/allsubmitted', async (req, res) => {
+            const cursor = submittedCollection.find();
+            const result = await cursor.toArray();
+            res.json(result);
+          })
+
+    //get add submitted assignment from take assignment
     app.post('/allsubmitted', async (req, res) => {
       const newSubmit = req.body;
       console.log(newSubmit);
@@ -64,6 +71,7 @@ async function run() {
         $set: {
           obtainMarks: updated.obtainMarks,
           status: updated.status,
+          feedback: updated.feedback,
         }
       }
       const result = await submittedCollection.updateOne(filter, assignment, options);
@@ -72,14 +80,10 @@ async function run() {
 
 
 
-          //// Show all submitted product
-          app.get('/allsubmitted', async (req, res) => {
-            const cursor = submittedCollection.find();
-            const result = await cursor.toArray();
-            res.json(result);
-          })
+         
 
 
+          //assignmentCollection part
     //all asingment show in 5000
     app.get('/allAssignment', async (req, res) => {
       const cursor = assignmentCollection.find();
